@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model companies {
+  id                Int                 @id @default(autoincrement())
+  symbol            String              @unique
+  name              String
+  sector            String?
+  website           String?
+  created_at        DateTime            @default(now())
+  updated_at        DateTime
+  historical_prices historical_prices[]
+  stock_prices      stock_prices[]
+}
+
+model historical_prices {
+  id         Int       @id @default(autoincrement())
+  date       DateTime
+  open       Float
+  high       Float
+  low        Float
+  close      Float
+  volume     BigInt
+  created_at DateTime  @default(now())
+  updated_at DateTime
+  companyId  Int
+  companies  companies @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, date])
+}
+
+model stock_prices {
+  id               Int       @id @default(autoincrement())
+  companyId        Int
+  open             Float
+  high             Float
+  low              Float
+  previousClose    Float
+  lastTradedPrice  Float
+  change           Float
+  changePercentage Float
+  volume           BigInt
+  valueInBillions  Float
+  timestamp        DateTime  @default(now())
+  created_at       DateTime  @default(now())
+  updated_at       DateTime
+  companies        companies @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId, timestamp])
+  @@index([timestamp])
+}
+
+model amazon_fashion_data {
+  id         Int      @id @default(autoincrement())
+  asin       String   @unique
+  title      String
+  price      Int
+  rating     Float?
+  link       String
+  image_link String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  categories String[]
+
+  @@index([asin])
+}
+
+model test_amazon_fashion_data {
+  id         Int      @id @default(autoincrement())
+  asin       String   @unique
+  title      String
+  price      Int
+  rating     Float?
+  link       String
+  image_link String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  categories String[]
+
+  @@index([asin])
+}
