@@ -55,6 +55,19 @@ const START_URLS = fashion_keywords.map(fk => `https://www.amazon.in/s?k=${encod
 (async () => {
   const browser = await puppeteer.launch({
     headless: true,
+    args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-accelerated-2d-canvas',
+    '--no-first-run',
+    '--no-zygote',
+    '--single-process', // Important for some environments
+    '--disable-gpu',
+    '--window-size=1920,1080',
+    '--disable-web-security',
+    '--disable-features=VizDisplayCompositor'
+  ]
   });
 
   for (const url of START_URLS) {
@@ -69,6 +82,7 @@ const START_URLS = fashion_keywords.map(fk => `https://www.amazon.in/s?k=${encod
 async function crawlListing(url, browser) {
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 800 });
+  await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
   await page.goto(url, { waitUntil: 'networkidle2' });
 
   const links = await page.$$eval(
@@ -90,6 +104,7 @@ async function crawlListing(url, browser) {
 async function crawlProduct(url, browser) {
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 800 });
+  await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36');
 
   try {
     await page.goto(url, { waitUntil: 'networkidle2' });
