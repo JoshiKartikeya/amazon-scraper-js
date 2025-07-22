@@ -4,5 +4,5 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const queue = new PQueue({
-  concurrency: parseInt(process.env.CONCURRENCY, 10) || 2,
+  concurrency: parseInt(process.env.CONCURRENCY) || 2,
 });

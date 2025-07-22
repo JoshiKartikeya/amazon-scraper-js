@@ -2,8 +2,8 @@ import puppeteer from 'puppeteer';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { queue } from './queue.js';
-import { saveItem } from './db.js';
+import { queue } from '../queue.js';
+import { saveItem } from './amazon-db.js';
 
 const fashion_keywords = ["men shirts" , "pant", "track pant", "bandana", "trendy jackets", "oversized t-shirts", "boho tops",
         "trousers for men", "men capri", "men sweat shirt", "half sleeve shirt", "cap for men", "men slim fit jeans",
