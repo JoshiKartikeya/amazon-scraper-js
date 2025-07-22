@@ -54,15 +54,7 @@ const START_URLS = fashion_keywords.map(fk => `https://www.amazon.in/s?k=${encod
 
 (async () => {
   const browser = await puppeteer.launch({
-    headless: false,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-features=UseOzonePlatform',
-      '--disable-gpu',
-      '--disable-software-rasterizer',
-    ]
+    headless: true,
   });
 
   for (const url of START_URLS) {
