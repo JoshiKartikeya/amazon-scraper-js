@@ -54,7 +54,6 @@ async function getPaginationUrls(startUrl, browser) {
       return document.querySelector("div._1G0WLw span")?.textContent || "";
     });
 
-    // Use regex to extract the total number of pages
     const match = pageNumbersText.match(/Page\s+\d+\s+of\s+(\d+)/);
 
     const totalPages = match ? parseInt(match[1]) : 1;
@@ -97,6 +96,10 @@ async function crawlListing(url, browser) {
     );
 
     console.log(`🔗 Found ${links.length} products on ${url}`);
+
+    if( links.length === 0){
+      
+    }
 
     for (const link of links) {
       queue.add(() => crawlProduct(link, browser));
