@@ -37,39 +37,6 @@ const START_URLS = fashion_keywords.map(
   process.exit(0);
 })();
 
-// async function getPaginationUrls(startUrl, browser) {
-//   const page = await browser.newPage();
-//   await page.setViewport({ width: 1280, height: 800 });
-
-//   try {
-//     await page.goto(startUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
-
-//     // Get last page number from pagination section
-//     const totalPages = await page.$$eval("a.cn\\+\\+Ap", (anchors) => {
-//       const pageNumbers = anchors
-//         .map((a) => parseInt(a.textContent))
-//         .filter((n) => !isNaN(n));
-//       return pageNumbers.length ? Math.max(...pageNumbers) : 1;
-//     });
-
-//     const urlPrefix = startUrl.includes("&page=")
-//       ? startUrl.split("&page=")[0]
-//       : startUrl;
-
-//     const allPageUrls = Array.from({ length: totalPages }, (_, i) => {
-//       const pageNum = i + 1;
-//       return `${urlPrefix}&page=${pageNum}`;
-//     });
-
-//     return allPageUrls;
-//   } catch (err) {
-//     console.error(`❌ Error while fetching pagination for ${startUrl}`, err);
-//     return [startUrl]; // fallback to the first page only
-//   } finally {
-//     await page.close();
-//   }
-// }
-
 async function getPaginationUrls(startUrl, browser) {
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 800 });
