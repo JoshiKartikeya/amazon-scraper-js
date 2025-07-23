@@ -3,9 +3,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import { queue } from "../queue.js";
-import { saveItem } from "./flipkart-db.js"; // You can rename if needed
+import { saveItem } from "./flipkart-db.js"; 
 
-const fashion_keywords = ["men shirts"]; // Shortened for demo
+const fashion_keywords = ["men shirts"]; 
 
 const START_URLS = fashion_keywords.map(
   (k) =>
@@ -46,7 +46,7 @@ async function crawlListing(url, browser) {
       Array.from(
         new Set(
           els
-            .map((el) => el.href.split("&")[0]) // Clean extra query params
+            .map((el) => el.href.split("&")[0])
             .filter((href) => href.includes("/p/"))
         )
       )
@@ -108,7 +108,7 @@ async function crawlProduct(url, browser) {
       return { title, price, rating, categories, image, link };
     });
 
-    // Extract pid from URL
+
     const pidMatch = url.match(/pid=([A-Z0-9]+)/i);
     const asin = pidMatch ? pidMatch[1] : null;
 
