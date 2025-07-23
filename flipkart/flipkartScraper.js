@@ -95,7 +95,7 @@ async function crawlProduct(url, browser) {
       const price = priceText
         ? parseInt(priceText.replace(/[₹,]/g, ""))
         : null;
-      const ratingText = getText("div._3LWZlK");
+      const ratingText = getText("div.XQDdHH._1Quie7");
       const rating = ratingText ? parseFloat(ratingText) : null;
 
       const categories = Array.from(
