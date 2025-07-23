@@ -99,8 +99,8 @@ async function crawlProduct(url, browser) {
       const rating = ratingText ? parseFloat(ratingText) : null;
 
       const categories = Array.from(
-        document.querySelectorAll("div._7dPnhA")
-      ).map((el) => el.textContent.trim());
+        document.querySelectorAll("div.r2CdBx")
+      ).map((el) => el.textContent.trim()); 
 
       const image = getImage();
       const link = location.href;
