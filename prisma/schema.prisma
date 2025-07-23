@@ -87,14 +87,21 @@ model test_amazon_fashion_data {
 }
 
 model flipkart_fashion_data {
-  id          Int      @id @default(autoincrement())
-  pid         String   @unique
-  title       String
-  price       Int
-  rating      Float?
-  link        String
-  image_link  String
-  categories  String[]
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  pid        String   @unique
+  title      String
+  price      Int
+  rating     Float?
+  link       String
+  image_link String
+  categories String[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model test_meesho_fashion_data {
+  id    Int    @id @default(autoincrement())
+  pid   String @unique
+  title String
+  price Int
 }

@@ -1,20 +1,21 @@
 import puppeteer from "puppeteer";
 import dotenv from "dotenv";
+import { queue } from "../queue.js";
+import { saveItem } from "./flipkart-db.js";
 dotenv.config();
 
-import { queue } from "../queue.js";
-import { saveItem } from "./flipkart-db.js"; 
-
-const fashion_keywords = ["men shirts"]; 
+const fashion_keywords = ["men shirts"];
 
 const START_URLS = fashion_keywords.map(
   (k) =>
-    `https://www.flipkart.com/search?q=${encodeURIComponent(k)}&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=on&as=off`
+    `https://www.flipkart.com/search?q=${encodeURIComponent(
+      k
+    )}&otracker=search&otracker1=search&marketplace=FLIPKART&as-show=on&as=off`
 );
 
 (async () => {
   const browser = await puppeteer.launch({
-    headless: 'new',
+    headless: "new",
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -24,13 +25,89 @@ const START_URLS = fashion_keywords.map(
   });
 
   for (const url of START_URLS) {
-    queue.add(() => crawlListing(url, browser));
+    const paginationUrls = await getPaginationUrls(url, browser);
+    console.log(`📄 Total pages found for ${url}: ${paginationUrls.length}`);
+    for (const pageUrl of paginationUrls) {
+      queue.add(() => crawlListing(pageUrl, browser));
+    }
   }
 
   await queue.onIdle();
   await browser.close();
   process.exit(0);
 })();
+
+// async function getPaginationUrls(startUrl, browser) {
+//   const page = await browser.newPage();
+//   await page.setViewport({ width: 1280, height: 800 });
+
+//   try {
+//     await page.goto(startUrl, { waitUntil: "domcontentloaded", timeout: 60000 });
+
+//     // Get last page number from pagination section
+//     const totalPages = await page.$$eval("a.cn\\+\\+Ap", (anchors) => {
+//       const pageNumbers = anchors
+//         .map((a) => parseInt(a.textContent))
+//         .filter((n) => !isNaN(n));
+//       return pageNumbers.length ? Math.max(...pageNumbers) : 1;
+//     });
+
+//     const urlPrefix = startUrl.includes("&page=")
+//       ? startUrl.split("&page=")[0]
+//       : startUrl;
+
+//     const allPageUrls = Array.from({ length: totalPages }, (_, i) => {
+//       const pageNum = i + 1;
+//       return `${urlPrefix}&page=${pageNum}`;
+//     });
+
+//     return allPageUrls;
+//   } catch (err) {
+//     console.error(`❌ Error while fetching pagination for ${startUrl}`, err);
+//     return [startUrl]; // fallback to the first page only
+//   } finally {
+//     await page.close();
+//   }
+// }
+
+async function getPaginationUrls(startUrl, browser) {
+  const page = await browser.newPage();
+  await page.setViewport({ width: 1280, height: 800 });
+  await page.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
+  );
+  try {
+    await page.goto(startUrl, {
+      waitUntil: "domcontentloaded",
+      timeout: 60000,
+    });
+
+    // Extract the text like "Page 10 of 306"
+    const pageNumbersText = await page.evaluate(() => {
+      return document.querySelector("div._1G0WLw span")?.textContent || "";
+    });
+
+    // Use regex to extract the total number of pages
+    const match = pageNumbersText.match(/Page\s+\d+\s+of\s+(\d+)/);
+
+    const totalPages = match ? parseInt(match[1]) : 1;
+    console.log(`📄 Found total pages: ${totalPages}`);
+
+    // Build pagination URLs
+    const urlPrefix = startUrl.includes("&page=")
+      ? startUrl.split("&page=")[0]
+      : startUrl;
+
+    const allPageUrls = Array.from({ length: totalPages }, (_, i) => {
+      return `${urlPrefix}&page=${i + 1}`;
+    });
+
+    return allPageUrls;
+  } catch (err) {
+    console.error(`❌ Error while fetching pagination for ${startUrl}`, err);
+    return [startUrl]; // fallback
+  }
+}
 
 async function crawlListing(url, browser) {
   const page = await browser.newPage();
@@ -57,19 +134,11 @@ async function crawlListing(url, browser) {
     for (const link of links) {
       queue.add(() => crawlProduct(link, browser));
     }
-
-    const nextHref = await page
-      .$eval("a._1LKTO3", (a) => {
-        return a.innerText.includes("Next") ? a.href : null;
-      })
-      .catch(() => null);
-
-    if (nextHref) queue.add(() => crawlListing(nextHref, browser));
   } catch (err) {
     console.error(`❌ Error in crawlListing for ${url}`, err);
+  } finally {
+    await page.close();
   }
-
-  await page.close();
 }
 
 async function crawlProduct(url, browser) {
@@ -86,28 +155,25 @@ async function crawlProduct(url, browser) {
       const getText = (selector) =>
         document.querySelector(selector)?.textContent.trim() || null;
       const getImage = () =>
-        document.querySelector("img._53J4C-.utBuJY , img.DByuf4.IZexXJ.jLEJ7H")?.src || null;
+        document.querySelector("img._53J4C-.utBuJY , img.DByuf4.IZexXJ.jLEJ7H")
+          ?.src || null;
 
       const title =
         getText("span.VU-ZEz") || getText("span._35KyD6") || "Unknown Title";
       const priceText = getText("div.Nx9bqj.CxhGGd");
-      console.log(`Price Text: ${priceText}`);
-      const price = priceText
-        ? parseInt(priceText.replace(/[₹,]/g, ""))
-        : null;
+      const price = priceText ? parseInt(priceText.replace(/[₹,]/g, "")) : null;
       const ratingText = getText("div.XQDdHH._1Quie7");
       const rating = ratingText ? parseFloat(ratingText) : null;
 
       const categories = Array.from(
         document.querySelectorAll("div.r2CdBx")
-      ).map((el) => el.textContent.trim()); 
+      ).map((el) => el.textContent.trim());
 
       const image = getImage();
       const link = location.href;
 
       return { title, price, rating, categories, image, link };
     });
-
 
     const pidMatch = url.match(/pid=([A-Z0-9]+)/i);
     const asin = pidMatch ? pidMatch[1] : null;
@@ -118,11 +184,10 @@ async function crawlProduct(url, browser) {
     }
 
     item.asin = asin;
-
     await saveItem(item);
   } catch (err) {
     console.error(`❌ Error scraping product: ${url}`, err);
+  } finally {
+    await page.close();
   }
-
-  await page.close();
 }
