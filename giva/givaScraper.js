@@ -10,7 +10,7 @@ const START_URLS = fashion_keywords.map(fk => `https://www.giva.co/search?q=${en
 
 (async () => {
     const browser = await puppeteer.launch({
-        headless: false,
+        headless: true,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',

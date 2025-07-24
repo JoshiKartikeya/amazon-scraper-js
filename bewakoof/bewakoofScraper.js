@@ -46,9 +46,6 @@ async function crawlListing(url, browser) {
         queue.add(() => crawlProduct(link, browser));
     }
 
-    // const nextHref = await page.$eval('a.s-pagination-next', a => a.href).catch(() => null);
-    // if (nextHref) queue.add(() => crawlListing(nextHref, browser));
-
     await page.close();
 }
 

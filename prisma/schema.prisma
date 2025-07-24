@@ -132,3 +132,27 @@ model test_giva_fashion_data {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 }
+
+model test_bluestone_fashion_data {
+  id         Int      @id @default(autoincrement())
+  pCode      String   @unique
+  title      String
+  price      Int
+  categories String[]
+  link       String
+  image_link String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
+model test_snitch_fashion_data {
+  id         Int      @id @default(autoincrement())
+  pCode      String   @unique
+  title      String
+  price      Int
+  rating     Float?
+  link       String
+  image_link String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
