@@ -122,7 +122,6 @@ const fashion_keywords = [
   "wallets",
   "rings",
   "bracelets",
-  // # Additional clothing types
   "henley t-shirts",
   "polo shirts",
   "longline t-shirts",
@@ -147,7 +146,6 @@ const fashion_keywords = [
   "flare pants",
   "dhoti pants",
   "harem pants",
-  // # Formal & office wear
   "formal shirts",
   "office trousers",
   "business suits",
@@ -160,7 +158,6 @@ const fashion_keywords = [
   "neckties",
   "bow ties",
   "cufflinks",
-  // # Ethnic & cultural fashion
   "anarkali suits",
   "patiala suits",
   "sharara sets",
@@ -172,7 +169,6 @@ const fashion_keywords = [
   "stoles",
   "indo-western gowns",
   "nehru jackets",
-  // # Styles & trends
   "gender-neutral clothing",
   "capsule wardrobe",
   "monochrome outfits",
@@ -195,7 +191,6 @@ const fashion_keywords = [
   "one-shoulder dresses",
   "cowl neck tops",
   "halter neck tops",
-  // # Fabrics & materials
   "cotton wear",
   "linen outfits",
   "denim wear",
@@ -212,7 +207,6 @@ const fashion_keywords = [
   "denim jackets",
   "knitwear",
   "crochet tops",
-  // # Footwear styles (extended)
   "brogues",
   "derbies",
   "oxfords",
@@ -229,7 +223,6 @@ const fashion_keywords = [
   "combat boots",
   "hiking shoes",
   "clogs",
-  // # Fashion accessories (extra)
   "chokers",
   "anklets",
   "nose pins",
