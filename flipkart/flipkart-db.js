@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 export async function saveItem(item) {
   try {
-    await prisma.test_amazon_fashion_data.upsert({
+    await prisma.flipkart_fashion_data.upsert({
       where: { pid: item.asin },
       create: {
         pid:        item.asin,
