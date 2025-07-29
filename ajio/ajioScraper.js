@@ -1,164 +1,112 @@
 import puppeteer from "puppeteer";
-import dotenv from "dotenv";
-import { queue } from "../queue.js";
-import { saveItem } from "./flipkart-db.js";
-dotenv.config();
+import { saveItem } from "./ajio-db.js";
 
-const fashion_keywords = ["men shirts"];
+const URL = "https://www.lenskart.com/sunglasses.html";
 
-const START_URLS = fashion_keywords.map(
-  (k) =>
-    `https://www.ajio.com/search/?text=${encodeURIComponent(k)}`
-);
+async function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
-(async () => {
-  const browser = await puppeteer.launch({
-    headless: "new",
-    args: [
-      "--no-sandbox",
-      "--disable-setuid-sandbox",
-      "--disable-dev-shm-usage",
-      "--window-size=1920,1080",
-    ],
+function extractPID(link){
+  const match = link.match()
+}
+
+async function productInfo(link, browser) {
+  const page = await browser.newPage();
+
+  await page.setViewport({ width: 1200, height: 800 });
+  await page.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+  );
+  await page.goto(link, {
+    waitUntil: "domcontentloaded",
+    timeout: 0,
   });
 
-  for (const url of START_URLS) {
-    queue.add(() => crawlProduct(url, browser));
-  }
-  await queue.onIdle();
-  await browser.close();
-  process.exit(0);
-})();
+  const productDetails = await page.evaluate(() => {
+    const categories = Array.from(
+      document.querySelectorAll("li[class*='LI--'] span[class*='BCSpan--'] a")
+    ).map((el) => el.innerText.trim());
+    return { categories };
+  });
 
-// async function getPaginationUrls(startUrl, browser) {
-//   const page = await browser.newPage();
-//   await page.setViewport({ width: 1280, height: 800 });
-//   await page.setUserAgent(
-//     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
-//   );
-//   try {
-//     await page.goto(startUrl, {
-//       waitUntil: "domcontentloaded",
-//       timeout: 60000,
-//     });
+  await page.close();
+  return productDetails;
+}
 
-//     // Extract the text like "Page 10 of 306"
-//     const pageNumbersText = await page.evaluate(() => {
-//       return document.querySelector("div._1G0WLw span")?.textContent || "";
-//     });
-
-//     const match = pageNumbersText.match(/Page\s+\d+\s+of\s+(\d+)/);
-
-//     const totalPages = match ? parseInt(match[1]) : 1;
-//     console.log(`📄 Found total pages: ${totalPages}`);
-
-//     // Build pagination URLs
-//     const urlPrefix = startUrl.includes("&page=")
-//       ? startUrl.split("&page=")[0]
-//       : startUrl;
-
-//     const allPageUrls = Array.from({ length: totalPages }, (_, i) => {
-//       return `${urlPrefix}&page=${i + 1}`;
-//     });
-
-//     return allPageUrls;
-//   } catch (err) {
-//     console.error(`❌ Error while fetching pagination for ${startUrl}`, err);
-//     return [startUrl]; // fallback
-//   }
-// }
-
-// async function crawlListing(url, browser) {
-//   const page = await browser.newPage();
-//   await page.setViewport({ width: 1280, height: 800 });
-//   await page.setUserAgent(
-//     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
-//   );
-
-//   try {
-//     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
-
-//     const links = await page.$$eval('a[href*="/p/"]', (els) =>
-//       Array.from(
-//         new Set(
-//           els
-//             .map((el) => el.href.split("&")[0])
-//             .filter((href) => href.includes("/p/"))
-//         )
-//       )
-//     );
-
-//     console.log(`🔗 Found ${links.length} products on ${url}`);
-
-//     if( links.length === 0){
-      
-//     }
-
-//     for (const link of links) {
-//       queue.add(() => crawlProduct(link, browser));
-//     }
-//   } catch (err) {
-//     console.error(`❌ Error in crawlListing for ${url}`, err);
-//   } finally {
-//     await page.close();
-//   }
-// }
-
-async function crawlProduct(url, browser) {
+async function scrapeLenskart() {
+  const browser = await puppeteer.launch({ headless: "new" });
   const page = await browser.newPage();
-  await page.setViewport({ width: 1280, height: 800 });
+
+  await page.setViewport({ width: 1200, height: 800 });
   await page.setUserAgent(
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
   );
+  await page.goto(URL, { waitUntil: "domcontentloaded", timeout: 0 });
 
+  const collected = new Map();
+  let previousCount = 0;
+  let stableRounds = 0;
 
-  try {
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
+  while (stableRounds < 8) {
+    const newProducts = await page.evaluate(() => {
+      const productCards = document.querySelectorAll("div.item");
+      const items = [];                
 
-    const itemNew = await page.evaluate(() =>{
-        const products = Array.from(document.querySelectorAll("div.item.rilrtl-products-list__item.item")).map((product) => {
-            const title = product.querySelector("div.nameCls")
-            const rating = product.quesrySelector("p._3I65V")
-            const price = product.querySelector("span.price strong")
-        })
-    })
+      productCards.forEach((card) => {
+        const link = card.querySelector("a")?.href;
+        const image = card.querySelector("div.img")?.src;
+        const rating = parseInt(
+          card.querySelector("div.contentHolder p")?.innerText
+        );
+        const title = card.querySelector("div.nameCls")?.innerText;
+        const priceTextRaw =
+          card.querySelector("span.price strong")?.innerText;
+        const price =
+          priceTextRaw && priceTextRaw.match(/\d+/)
+            ? parseInt(priceTextRaw.replace(/[₹,]/g, ""))
+            : null;
+        const pid = extractPID(link);
+        const categories = productInfo(link , browser);
 
-    const item = await page.evaluate(() => {
-      const getText = (selector) =>
-        document.querySelector(selector)?.textContent.trim() || null;
-      const getImage = () =>
-        document.querySelector("img._53J4C-.utBuJY , img.DByuf4.IZexXJ.jLEJ7H")
-          ?.src || null;
-
-      const title =
-        getText("span.VU-ZEz") || getText("span._35KyD6") || "Unknown Title";
-      const priceText = getText("div.Nx9bqj.CxhGGd");
-      const price = priceText ? parseInt(priceText.replace(/[₹,]/g, "")) : null;
-      const ratingText = getText("div.XQDdHH._1Quie7");
-      const rating = ratingText ? parseFloat(ratingText) : null;
-
-      const categories = Array.from(
-        document.querySelectorAll("div.r2CdBx")
-      ).map((el) => el.textContent.trim());
-
-      const image = getImage();
-      const link = location.href;
-
-      return { title, price, rating, categories, image, link };
+        if (pid && link && image && title) {
+          items.push({ link, image, rating, title, price, pid, categories });
+        }
+      });
+      return items;
     });
 
-    const pidMatch = url.match(/pid=([A-Z0-9]+)/i);
-    const asin = pidMatch ? pidMatch[1] : null;
-
-    if (!asin) {
-      console.warn(`⚠️ PID missing for ${url}`);
-      return;
+    for (const prod of newProducts) {
+      if (!collected.has(prod.link)) {
+        const { pid, categories } = await scrapePID(prod.link, browser);
+        collected.set(prod.link, { ...prod, pid, categories });
+        try {
+          await saveItem({ ...prod, pid, categories });
+          console.log("Saved to DB:", prod.title);
+        } catch (err) {
+          console.error("Error saving item:", err.message);
+        }
+      }
     }
-    item.asin = asin;
-    await saveItem(item);
-  } catch (err) {
-    console.error(`❌ Error scraping product: ${url}`, err);
-  } finally {
-    await page.close();
+
+    console.log(`Products collected so far: ${collected.size}`);
+
+    await page.evaluate(() => {
+      window.scrollBy(0, window.innerHeight / 2);
+    });
+    await delay(3000);
+
+    if (collected.size === previousCount) {
+      stableRounds++;
+    } else {
+      stableRounds = 0;
+      previousCount = collected.size;
+    }
   }
+
+  const result = Array.from(collected.values());
+
+  await browser.close();
 }
+
+scrapeLenskart();
