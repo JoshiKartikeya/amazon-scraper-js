@@ -4,15 +4,14 @@ const prisma = new PrismaClient();
 
 export async function saveItem(item) {
     try {
-        await prisma.test_bewakoof_fashion_data.upsert({
+        await prisma.bewakoof_fashion_data.upsert({
             where: { pid: item.pid },
             create: {
                 pid:        item.pid,
                 title:      item.title,
                 price:      item.price,
                 categories:  item.categories,
-                rating:     item.rating,
-                link:     item.link,
+                link:       item.link,
                 image_link:  item.image,
             },
             update: {
@@ -20,7 +19,6 @@ export async function saveItem(item) {
                 title:      item.title,
                 price:      item.price,
                 categories:  item.categories,
-                rating:     item.rating,
                 link:     item.link,
                 image_link:  item.image,
             },
