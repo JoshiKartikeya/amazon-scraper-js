@@ -113,11 +113,11 @@ model test_bewakoof_fashion_data {
   pid        String   @unique
   title      String
   price      Int
-  rating     Float?
   link       String
   image_link String
   categories String[]
   created_at DateTime @default(now())
+  rating     Float?
   updated_at DateTime @updatedAt
 }
 
@@ -155,4 +155,40 @@ model test_snitch_fashion_data {
   image_link String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+}
+
+model lenskart_sunglasses_data {
+  id         Int      @id @default(autoincrement())
+  pid        String   @unique
+  title      String
+  price      Int
+  link       String
+  image_link String
+  categories String[]
+  created_at DateTime @default(now())
+  updated_at DateTime
+}
+
+model test_yesstyle_fashion_data {
+  id         Int      @id @default(autoincrement())
+  pid        String   @unique
+  title      String
+  price      Int
+  rating     Float?
+  link       String
+  image_link String
+  created_at DateTime @default(now())
+  updated_at DateTime
+}
+
+model titan_sunglasses_data {
+  id         Int      @id @default(autoincrement())
+  pid        String   @unique
+  title      String
+  price      Int
+  link       String
+  image_link String
+  categories String[]
+  created_at DateTime @default(now())
+  updated_at DateTime
 }

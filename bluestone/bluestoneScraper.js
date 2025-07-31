@@ -2,7 +2,7 @@ import puppeteer from 'puppeteer';
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { queue } from './queue.js';
+import { queue } from '../queue.js';
 import { saveItem } from './bluestone-db.js';
 
 const fashion_keywords = ["rings"];
